@@ -57,15 +57,3 @@ resource "aws_security_group" "ecs" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
-
-resource "aws_security_group" "rds" {
-  name   = "${var.app_name}-rds-${var.app_env}"
-  vpc_id = aws_vpc.main.id
-
-  ingress {
-    from_port       = "5432"
-    to_port         = "5432"
-    protocol        = "tcp"
-    security_groups = [aws_security_group.ecs.id]
-  }
-}

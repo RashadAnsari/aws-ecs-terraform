@@ -9,6 +9,13 @@ variable "default_tags" {
   default     = {}
 }
 
+# Example: https://cloud-images.ubuntu.com/locator/ec2/
+variable "aws_ami" {
+  type        = string
+  description = "AWS AMI for specified region"
+  default     = "ami-06d1a5507784edbad" # eu-west-1
+}
+
 variable "app_name" {
   type        = string
   description = "Application name"
@@ -19,6 +26,18 @@ variable "app_env" {
   type        = string
   description = "Application environment"
   default     = "prod"
+}
+
+variable "app_port" {
+  type        = number
+  description = "Port number for the application"
+  default     = 8080
+}
+
+variable "app_count" {
+  type        = string
+  description = "Desired application count"
+  default     = 1
 }
 
 variable "vpc_cidr_block" {
@@ -52,4 +71,24 @@ variable "private_subnet_cidr_blocks" {
 variable "ssh_public_file" {
   description = "Path to an SSH public key"
   default     = "~/.ssh/id_rsa.pub"
+}
+
+# variable "autoscale_min" {
+#   description = "Minimum autoscale (number of EC2)"
+#   default     = 1
+# }
+
+# variable "autoscale_max" {
+#   description = "Maximum autoscale (number of EC2)"
+#   default     = 10
+# }
+
+# variable "autoscale_desired" {
+#   description = "Desired autoscale (number of EC2)"
+#   default     = 4
+# }
+
+variable "docker_image_url" {
+  description = "Docker image to run in the ECS cluster"
+  default     = "<AWS_ACCOUNT_ID>.dkr.ecr.eu-west-1.amazonaws.com/go-app-prod:latest"
 }

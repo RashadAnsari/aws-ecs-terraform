@@ -8,7 +8,7 @@ resource "aws_lb" "main" {
 
 resource "aws_alb_target_group" "tg" {
   name     = "${var.app_name}-alb-${var.app_env}-tg"
-  port     = 80
+  port     = var.app_port
   protocol = "HTTP"
   vpc_id   = aws_vpc.main.id
 
@@ -45,6 +45,7 @@ resource "aws_alb_listener" "ecs_alb_http_listener" {
   protocol          = "HTTP"
   # ssl_policy        = "ELBSecurityPolicy-2016-08"
   # certificate_arn   = ""
+
   depends_on = [aws_alb_target_group.tg]
 
   default_action {
