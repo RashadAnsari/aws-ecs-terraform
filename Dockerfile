@@ -1,7 +1,7 @@
 FROM golang:1.19-alpine AS build
 RUN apk add --update --no-cache build-base
 WORKDIR /app
-COPY ./api .
+COPY . .
 RUN make build
 
 FROM alpine:3.9
