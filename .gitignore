@@ -12,6 +12,7 @@ go-app
 .terraform
 .terraform.lock.hcl
 terraform.tfstate
+terraform.tfstate.backup
 
 # Production
 vendor
