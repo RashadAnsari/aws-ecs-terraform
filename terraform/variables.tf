@@ -69,26 +69,6 @@ variable "private_subnet_cidr_blocks" {
 }
 
 variable "ssh_public_file" {
-  description = "Path to an SSH public key"
+  description = "Path to SSH public key"
   default     = "~/.ssh/id_rsa.pub"
-}
-
-# variable "autoscale_min" {
-#   description = "Minimum autoscale (number of EC2)"
-#   default     = 1
-# }
-
-# variable "autoscale_max" {
-#   description = "Maximum autoscale (number of EC2)"
-#   default     = 10
-# }
-
-# variable "autoscale_desired" {
-#   description = "Desired autoscale (number of EC2)"
-#   default     = 4
-# }
-
-variable "docker_image_url" {
-  description = "Docker image to run in the ECS cluster"
-  default     = "<AWS_ACCOUNT_ID>.dkr.ecr.eu-west-1.amazonaws.com/go-app-prod:latest"
 }
