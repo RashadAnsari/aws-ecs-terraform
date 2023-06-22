@@ -1,0 +1,15 @@
+# IDE
+.idea
+.vscode
+
+# OS
+.DS_Store
+
+# App
+go-app
+
+# Production
+vendor
+
+# Config
+.env
