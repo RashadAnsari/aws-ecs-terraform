@@ -1,5 +1,5 @@
 resource "aws_security_group" "alb" {
-  name   = "alb"
+  name   = "${var.app_name}-alb-${var.app_env}"
   vpc_id = aws_vpc.main.id
 
   ingress {
@@ -32,7 +32,7 @@ resource "aws_security_group" "alb" {
 }
 
 resource "aws_security_group" "ecs" {
-  name   = "ecs"
+  name   = "${var.app_name}-ecs-${var.app_env}"
   vpc_id = aws_vpc.main.id
 
   # FIXME: Use application port and protocol here.
@@ -59,7 +59,7 @@ resource "aws_security_group" "ecs" {
 }
 
 resource "aws_security_group" "rds" {
-  name   = "rds"
+  name   = "${var.app_name}-rds-${var.app_env}"
   vpc_id = aws_vpc.main.id
 
   ingress {

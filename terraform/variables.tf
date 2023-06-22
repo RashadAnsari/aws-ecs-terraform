@@ -9,6 +9,18 @@ variable "default_tags" {
   default     = {}
 }
 
+variable "app_name" {
+  type        = string
+  description = "Application name"
+  default     = "go-app"
+}
+
+variable "app_env" {
+  type        = string
+  description = "Application environment"
+  default     = "prod"
+}
+
 variable "vpc_cidr_block" {
   type        = string
   description = "CIDR block for VPC"
@@ -35,4 +47,9 @@ variable "private_subnet_cidr_blocks" {
     "10.0.103.0/24",
     "10.0.104.0/24",
   ]
+}
+
+variable "ssh_public_file" {
+  description = "Path to an SSH public key"
+  default     = "~/.ssh/id_rsa.pub"
 }
