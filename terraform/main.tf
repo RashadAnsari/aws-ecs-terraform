@@ -1,7 +1,6 @@
 locals {
-  name_prefix = "${var.app_name}-${var.app_env}"
-
-  azs = slice(data.aws_availability_zones.available.names, 0, 3)
+  name = "${var.app_name}-${var.app_env}"
+  azs  = slice(data.aws_availability_zones.available.names, 0, 3)
 }
 
 data "aws_ssm_parameter" "ecs_optimized_ami" {
@@ -9,14 +8,13 @@ data "aws_ssm_parameter" "ecs_optimized_ami" {
 }
 
 data "aws_ecr_repository" "app" {
-  name = local.name_prefix
+  name = local.name
 }
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "~> 5.0"
 
-  name = "${local.name_prefix}-vpc"
   cidr = var.vpc_cidr
 
   azs             = local.azs
@@ -31,7 +29,7 @@ module "alb_sg" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "~> 5.0"
 
-  name   = "${local.name_prefix}-alb-sg"
+  name   = "${var.ecs_cluster_name}-alb-sg"
   vpc_id = module.vpc.vpc_id
 
   ingress_rules       = ["http-80-tcp", "https-443-tcp", "all-icmp"]
@@ -45,7 +43,7 @@ module "alb" {
   source  = "terraform-aws-modules/alb/aws"
   version = "~> 8.0"
 
-  name = "${local.name_prefix}-alb"
+  name = "${var.ecs_cluster_name}-alb"
 
   load_balancer_type = "application"
 
@@ -134,7 +132,7 @@ module "autoscaling_sg" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "~> 5.0"
 
-  name   = "${local.name_prefix}-autoscaling-sg"
+  name   = "${var.ecs_cluster_name}-autoscaling-sg"
   vpc_id = module.vpc.vpc_id
 
   computed_ingress_with_source_security_group_id = [
@@ -162,13 +160,13 @@ module "autoscaling" {
 
   for_each = {
     on-demand = {
-      instance_type              = "t3.micro"
+      instance_type              = var.ecs_ec2_instance_type
       use_mixed_instances_policy = false
       mixed_instances_policy     = {}
       user_data                  = <<-EOT
         #!/bin/bash
         cat <<'EOF' >> /etc/ecs/ecs.config
-        ECS_CLUSTER=${local.name_prefix}-cluster
+        ECS_CLUSTER=${var.ecs_cluster_name}
         ECS_LOGLEVEL=warning
         ECS_CONTAINER_INSTANCE_TAGS=${jsonencode(var.default_tags)}
         ECS_ENABLE_TASK_IAM_ROLE=true
@@ -177,7 +175,7 @@ module "autoscaling" {
     }
   }
 
-  name = "${local.name_prefix}-${each.key}-autoscaling"
+  name = "${var.ecs_cluster_name}-${each.key}-autoscaling"
 
   image_id      = jsondecode(data.aws_ssm_parameter.ecs_optimized_ami.value)["image_id"]
   instance_type = each.value.instance_type
@@ -190,16 +188,17 @@ module "autoscaling" {
   ignore_desired_capacity_changes = true
 
   create_iam_instance_profile = true
-  iam_role_name               = "${local.name_prefix}-iam"
+  iam_role_name               = "${var.ecs_cluster_name}-iam"
   iam_role_policies = {
     AmazonSSMManagedInstanceCore        = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
     AmazonEC2ContainerServiceforEC2Role = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
   }
 
   health_check_type = "EC2"
-  min_size          = 1
-  max_size          = 5
-  desired_capacity  = var.app_count
+
+  min_size         = var.min_app_count
+  desired_capacity = var.desired_app_count
+  max_size         = var.max_app_count
 
   autoscaling_group_tags = {
     AmazonECSManaged = true
@@ -215,7 +214,10 @@ module "ecs_cluster" {
   source  = "terraform-aws-modules/ecs/aws//modules/cluster"
   version = "~> 5.0"
 
-  cluster_name = "${local.name_prefix}-cluster"
+  cluster_name = var.ecs_cluster_name
+
+  create_cloudwatch_log_group            = var.create_cloudwatch_log_group
+  cloudwatch_log_group_retention_in_days = var.cloudwatch_log_group_retention_in_days
 
   default_capacity_provider_use_fargate = false
   autoscaling_capacity_providers = {
@@ -241,7 +243,7 @@ module "ecs_service" {
   source  = "terraform-aws-modules/ecs/aws//modules/service"
   version = "~> 5.0"
 
-  name        = "${local.name_prefix}-service"
+  name        = local.name
   cluster_arn = module.ecs_cluster.arn
 
   requires_compatibilities = ["EC2"]
@@ -252,8 +254,14 @@ module "ecs_service" {
     }
   }
 
-  cpu    = 512
-  memory = 512
+  cpu    = var.app_cpu
+  memory = var.app_memory
+
+  container_definition_defaults = {
+    enable_cloudwatch_logging              = var.create_cloudwatch_log_group
+    create_cloudwatch_log_group            = var.create_cloudwatch_log_group
+    cloudwatch_log_group_retention_in_days = var.cloudwatch_log_group_retention_in_days
+  }
 
   container_definitions = {
     (var.app_name) = {
