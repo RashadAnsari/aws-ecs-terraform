@@ -196,9 +196,9 @@ module "autoscaling" {
 
   health_check_type = "EC2"
 
-  min_size         = var.min_app_count
-  desired_capacity = var.desired_app_count
-  max_size         = var.max_app_count
+  min_size         = var.ecs_ec2_min_count
+  desired_capacity = var.ecs_ec2_desired_count
+  max_size         = var.ecs_ec2_max_count
 
   autoscaling_group_tags = {
     AmazonECSManaged = true
@@ -223,12 +223,12 @@ module "ecs_cluster" {
   autoscaling_capacity_providers = {
     on-demand = {
       auto_scaling_group_arn         = module.autoscaling["on-demand"].autoscaling_group_arn
-      managed_termination_protection = "ENABLED"
+      managed_termination_protection = var.ecs_cluster_scaling ? "ENABLED" : "DISABLED"
 
       managed_scaling = {
         minimum_scaling_step_size = 1
         maximum_scaling_step_size = 5
-        status                    = "ENABLED"
+        status                    = var.ecs_cluster_scaling ? "ENABLED" : "DISABLED"
         target_capacity           = 80
       }
 
