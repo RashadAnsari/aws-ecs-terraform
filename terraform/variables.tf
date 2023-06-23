@@ -5,15 +5,8 @@ variable "region" {
 
 variable "default_tags" {
   type        = map(string)
-  description = "AWS Resource default tags"
+  description = "AWS default tags"
   default     = {}
-}
-
-# Example: https://cloud-images.ubuntu.com/locator/ec2/
-variable "aws_ami" {
-  type        = string
-  description = "AWS AMI for specified region"
-  default     = "ami-06d1a5507784edbad" # eu-west-1
 }
 
 variable "app_name" {
@@ -25,14 +18,19 @@ variable "app_name" {
 variable "app_env" {
   type        = string
   description = "Application environment"
-  default     = "prod"
+  default     = "production"
 }
 
 variable "app_port" {
   type        = number
-  description = "Port number for the application"
+  description = "Application port"
   default     = 8080
 }
+
+# variable "app_domain" {
+#   type        = string
+#   description = "Application domain"
+# }
 
 variable "app_count" {
   type        = string
@@ -40,35 +38,14 @@ variable "app_count" {
   default     = 1
 }
 
-variable "vpc_cidr_block" {
+variable "vpc_cidr" {
   type        = string
-  description = "CIDR block for VPC"
+  description = "AWS VPC cidr"
   default     = "10.0.0.0/16"
 }
 
-variable "public_subnet_cidr_blocks" {
-  type        = list(string)
-  description = "Available CIDR blocks for public subnets"
-  default = [
-    "10.0.1.0/24",
-    "10.0.2.0/24",
-    "10.0.3.0/24",
-    "10.0.4.0/24"
-  ]
-}
-
-variable "private_subnet_cidr_blocks" {
-  type        = list(string)
-  description = "Available CIDR blocks for private subnets"
-  default = [
-    "10.0.101.0/24",
-    "10.0.102.0/24",
-    "10.0.103.0/24",
-    "10.0.104.0/24",
-  ]
-}
-
-variable "ssh_public_file" {
-  description = "Path to SSH public key"
-  default     = "~/.ssh/id_rsa.pub"
+variable "docker_image_tag" {
+  type        = string
+  description = "App docker image tag"
+  default     = "latest"
 }
